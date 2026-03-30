@@ -10,8 +10,13 @@ const MOVIE_QUERY = `
     _id,
     title,
     category,
+    description,
+    duration,
+    rating,
     "posterUrl": poster.asset->url,
     "videoUrl": videoFile.asset->url,
+    cloudinaryVideoUrl,
+    videoSource,
     _createdAt
   }
 `;
@@ -80,24 +85,31 @@ export default function WatchPage() {
       {/* Video Player Section */}
       <section className="w-full bg-black">
         <div className="w-full aspect-video flex items-center justify-center bg-neutral-900">
-          {movie.videoUrl ? (
-            <video
-              key={movie.videoUrl}
-              className="w-full h-full"
-              controls
-              autoPlay
-              muted
-              crossOrigin="anonymous"
-              style={{ backgroundColor: '#000' }}
-            >
-              <source src={movie.videoUrl} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          ) : (
-            <div className="flex items-center justify-center text-neutral-500">
-              <p>No video available</p>
-            </div>
-          )}
+          {(() => {
+            // Determine which video source to use
+            const finalVideoUrl = movie.videoSource === 'cloudinary' 
+              ? movie.cloudinaryVideoUrl 
+              : movie.videoUrl;
+            
+            return finalVideoUrl ? (
+              <video
+                key={finalVideoUrl}
+                className="w-full h-full"
+                controls
+                autoPlay
+                muted
+                crossOrigin="anonymous"
+                style={{ backgroundColor: '#000' }}
+              >
+                <source src={finalVideoUrl} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <div className="flex items-center justify-center text-neutral-500">
+                <p>No video available</p>
+              </div>
+            );
+          })()}
         </div>
       </section>
 
@@ -106,18 +118,34 @@ export default function WatchPage() {
         <div className="mb-8">
           <h1 className="text-5xl font-bold mb-4">{movie.title}</h1>
           
-          <div className="flex items-center gap-4 mb-4">
+          <div className="flex items-center flex-wrap gap-4 mb-6">
             {movie.category && (
               <span className="bg-red-600 px-3 py-1 rounded-full text-sm font-semibold capitalize">
                 {movie.category}
               </span>
             )}
+            {movie.rating && (
+              <span className="text-yellow-400 text-sm font-semibold">
+                {'⭐'.repeat(Math.round(movie.rating))} ({movie.rating}/5)
+              </span>
+            )}
+            {movie.duration && (
+              <span className="text-neutral-400 text-sm">
+                ⏱️ {movie.duration} minutes
+              </span>
+            )}
             <p className="text-neutral-400 text-sm">
-              Released: {new Date(movie._createdAt).toLocaleDateString()}
+              📅 Added: {new Date(movie._createdAt).toLocaleDateString()}
             </p>
           </div>
 
-          <p className="text-neutral-300 text-lg leading-relaxed">
+          {movie.description && (
+            <p className="text-neutral-300 text-lg leading-relaxed mb-4">
+              {movie.description}
+            </p>
+          )}
+          
+          <p className="text-neutral-400 text-sm">
             Enjoy this movie in high-quality, ad-supported streaming. No sign-ups required!
           </p>
         </div>

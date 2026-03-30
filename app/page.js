@@ -11,8 +11,11 @@ const MOVIES_QUERY = `
     title,
     slug,
     category,
+    rating,
     "posterUrl": poster.asset->url,
     "videoUrl": videoFile.asset->url,
+    cloudinaryVideoUrl,
+    videoSource,
     _createdAt
   }
 `;
@@ -109,9 +112,14 @@ export default function Home() {
                     </div>
                   </div>
                   <p className="mt-3 font-medium text-sm text-neutral-300 truncate">{movie.title}</p>
-                  {movie.category && (
-                    <p className="text-xs text-neutral-500 capitalize">{movie.category}</p>
-                  )}
+                  <div className="flex items-center justify-between mt-1">
+                    {movie.category && (
+                      <p className="text-xs text-neutral-500 capitalize">{movie.category}</p>
+                    )}
+                    {movie.rating && (
+                      <p className="text-xs text-yellow-400">{'⭐'.repeat(Math.round(movie.rating))}</p>
+                    )}
+                  </div>
                 </div>
               </Link>
             ))}
