@@ -75,12 +75,13 @@ export default function UploadPage() {
       setFileSize(selectedFile.size);
 
       // Auto-suggest upload method based on file size
-      if (selectedFile.size > 250 * 1024 * 1024) {
+      const sizeMB = (selectedFile.size / (1024 * 1024)).toFixed(1);
+      if (selectedFile.size > 1024 * 1024 * 1024) {
         setFormData({ ...formData, videoSource: 'cloudinary' });
-        setMessage('⚠️ Large file detected! Please upload to Cloudinary first and paste the URL.');
+        setMessage(`⚠️ File is ${sizeMB}MB (exceeds 1GB limit). Please upload to Cloudinary first and paste the URL.`);
       } else {
         setFormData({ ...formData, videoSource: 'sanity' });
-        setMessage('✅ File size OK for direct upload to Sanity');
+        setMessage(`✅ File is ${sizeMB}MB. Ready to upload directly!`);
       }
     }
   };
@@ -103,11 +104,17 @@ export default function UploadPage() {
       if (!posterFile) {
         throw new Error('Poster image is required');
       }
-      if (formData.videoSource === 'sanity' && !file) {
-        throw new Error('Video file is required for Sanity upload');
+      if (!file) {
+        throw new Error('Video file is required');
       }
-      if (formData.videoSource === 'cloudinary' && !formData.cloudinaryUrl) {
-        throw new Error('Cloudinary URL is required');
+      
+      // Auto-determine video source based on file size
+      let uploadSource = 'sanity';
+      if (file.size > 1024 * 1024 * 1024) { // 1GB limit
+        uploadSource = 'cloudinary';
+        if (!formData.cloudinaryUrl) {
+          throw new Error('For files larger than 1GB, please upload to Cloudinary first and paste the URL');
+        }
       }
 
       // Create FormData for file upload
@@ -118,11 +125,11 @@ export default function UploadPage() {
       uploadFormData.append('rating', formData.rating);
       uploadFormData.append('duration', formData.duration);
       uploadFormData.append('releaseYear', formData.releaseYear);
-      uploadFormData.append('videoSource', formData.videoSource);
+      uploadFormData.append('videoSource', uploadSource);
       uploadFormData.append('cloudinaryUrl', formData.cloudinaryUrl);
       uploadFormData.append('posterFile', posterFile);
 
-      if (file) {
+      if (uploadSource === 'sanity') {
         uploadFormData.append('videoFile', file);
       }
 
@@ -270,70 +277,43 @@ export default function UploadPage() {
             )}
           </div>
 
-          {/* Video Source Selection */}
+          {/* Video File Selection - Always Show */}
           <div>
             <label className="block text-sm font-medium text-white mb-2">
-              Video Source
+              Video File *
             </label>
-            <div className="grid grid-cols-2 gap-4">
-              <label className={`p-4 rounded-lg border-2 cursor-pointer transition ${
-                formData.videoSource === 'sanity'
-                  ? 'border-red-600 bg-red-600/10'
-                  : 'border-neutral-700 bg-neutral-800 hover:border-neutral-600'
-              }`}>
-                <input
-                  type="radio"
-                  name="videoSource"
-                  value="sanity"
-                  checked={formData.videoSource === 'sanity'}
-                  onChange={handleInputChange}
-                  className="mr-2"
-                />
-                <span className="font-medium">📁 Direct Upload</span>
-                <p className="text-xs text-neutral-400 mt-1">Files &lt;250MB</p>
-              </label>
-              <label className={`p-4 rounded-lg border-2 cursor-pointer transition ${
-                formData.videoSource === 'cloudinary'
-                  ? 'border-red-600 bg-red-600/10'
-                  : 'border-neutral-700 bg-neutral-800 hover:border-neutral-600'
-              }`}>
-                <input
-                  type="radio"
-                  name="videoSource"
-                  value="cloudinary"
-                  checked={formData.videoSource === 'cloudinary'}
-                  onChange={handleInputChange}
-                  className="mr-2"
-                />
-                <span className="font-medium">☁️ Cloudinary URL</span>
-                <p className="text-xs text-neutral-400 mt-1">1GB+ files</p>
-              </label>
-            </div>
+            <input
+              type="file"
+              accept="video/*"
+              onChange={handleFileSelect}
+              className="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-red-600 file:bg-red-600 file:text-white file:border-0 file:rounded file:px-3 file:py-1 file:cursor-pointer"
+              required
+            />
+            {file && (
+              <div className="mt-3">
+                <p className="text-neutral-400 text-sm">
+                  📹 {file.name} ({(fileSize / (1024 * 1024)).toFixed(2)} MB)
+                </p>
+                {fileSize > 250 * 1024 * 1024 && (
+                  <div className="mt-3 p-3 bg-yellow-900/20 border border-yellow-600 rounded text-yellow-400 text-sm">
+                    <p className="font-medium">⚠️ Large File Detected!</p>
+                    <p className="mt-1">Your file is larger than 250MB. You'll need to:</p>
+                    <ol className="list-decimal ml-5 mt-2 space-y-1">
+                      <li>Create a free Cloudinary account at cloudinary.com</li>
+                      <li>Upload this video there</li>
+                      <li>Copy the video URL and paste it in the Cloudinary URL field below</li>
+                    </ol>
+                  </div>
+                )}
+                {fileSize <= 250 * 1024 * 1024 && (
+                  <p className="text-green-400 text-sm mt-2">✅ File size is perfect for direct upload!</p>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Video File Upload (Sanity) */}
-          {formData.videoSource === 'sanity' && (
-            <div>
-              <label className="block text-sm font-medium text-white mb-2">
-                Video File *
-              </label>
-              <input
-                type="file"
-                accept="video/*"
-                onChange={handleFileSelect}
-                className="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-red-600 file:bg-red-600 file:text-white file:border-0 file:rounded file:px-3 file:py-1 file:cursor-pointer"
-                required={formData.videoSource === 'sanity'}
-              />
-              {file && (
-                <p className="text-neutral-400 text-sm mt-2">
-                  ✅ {file.name} ({(fileSize / (1024 * 1024)).toFixed(2)} MB)
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Cloudinary URL */}
-          {formData.videoSource === 'cloudinary' && (
+          {/* Cloudinary URL - Show only for large files */}
+          {file && fileSize > 250 * 1024 * 1024 && (
             <div>
               <label className="block text-sm font-medium text-white mb-2">
                 Cloudinary Video URL *
@@ -345,10 +325,10 @@ export default function UploadPage() {
                 onChange={handleInputChange}
                 placeholder="https://res.cloudinary.com/..."
                 className="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-red-600"
-                required={formData.videoSource === 'cloudinary'}
+                required={file && fileSize > 250 * 1024 * 1024}
               />
               <p className="text-neutral-400 text-xs mt-2">
-                📝 Upload video to Cloudinary first, then paste the video URL here
+                Paste the complete Cloudinary video URL (should include /video/ in the path)
               </p>
             </div>
           )}
