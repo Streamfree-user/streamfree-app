@@ -3,19 +3,5 @@
   "devCommand": "next dev",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "env": [
-    {
-      "key": "NEXT_PUBLIC_SANITY_PROJECT_ID",
-      "description": "Your Sanity.io Project ID"
-    },
-    {
-      "key": "NEXT_PUBLIC_SANITY_DATASET",
-      "description": "Your Sanity.io Dataset (usually 'production')",
-      "value": "production"
-    },
-    {
-      "key": "NEXT_PUBLIC_GOOGLE_ADSENSE_ID",
-      "description": "Your Google AdSense Publisher ID (format: ca-pub-...)"
-    }
-  ]
+  "env": {}
 }
