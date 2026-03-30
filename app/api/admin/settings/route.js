@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from 'next-sanity';
+import { createClient } from '@sanity/client';
 
 const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
