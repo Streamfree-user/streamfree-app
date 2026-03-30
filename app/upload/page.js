@@ -81,7 +81,7 @@ export default function UploadPage() {
         setMessage(`⚠️ File is ${sizeMB}MB (exceeds 1GB limit). Please upload to Cloudinary first and paste the URL.`);
       } else {
         setFormData({ ...formData, videoSource: 'sanity' });
-        setMessage(`✅ File is ${sizeMB}MB. Ready to upload directly!`);
+        setMessage(`✅ File is ${sizeMB}MB. Ready to upload directly to Sanity (up to 1GB)!`);
       }
     }
   };
@@ -294,10 +294,10 @@ export default function UploadPage() {
                 <p className="text-neutral-400 text-sm">
                   📹 {file.name} ({(fileSize / (1024 * 1024)).toFixed(2)} MB)
                 </p>
-                {fileSize > 250 * 1024 * 1024 && (
+                {fileSize > 1024 * 1024 * 1024 && (
                   <div className="mt-3 p-3 bg-yellow-900/20 border border-yellow-600 rounded text-yellow-400 text-sm">
                     <p className="font-medium">⚠️ Large File Detected!</p>
-                    <p className="mt-1">Your file is larger than 250MB. You'll need to:</p>
+                    <p className="mt-1">Your file is larger than 1GB. You'll need to:</p>
                     <ol className="list-decimal ml-5 mt-2 space-y-1">
                       <li>Create a free Cloudinary account at cloudinary.com</li>
                       <li>Upload this video there</li>
@@ -305,15 +305,15 @@ export default function UploadPage() {
                     </ol>
                   </div>
                 )}
-                {fileSize <= 250 * 1024 * 1024 && (
-                  <p className="text-green-400 text-sm mt-2">✅ File size is perfect for direct upload!</p>
+                {fileSize <= 1024 * 1024 * 1024 && (
+                  <p className="text-green-400 text-sm mt-2">✅ File size is perfect for direct upload to Sanity!</p>
                 )}
               </div>
             )}
           </div>
 
           {/* Cloudinary URL - Show only for large files */}
-          {file && fileSize > 250 * 1024 * 1024 && (
+          {file && fileSize > 1024 * 1024 * 1024 && (
             <div>
               <label className="block text-sm font-medium text-white mb-2">
                 Cloudinary Video URL *
@@ -325,7 +325,7 @@ export default function UploadPage() {
                 onChange={handleInputChange}
                 placeholder="https://res.cloudinary.com/..."
                 className="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-red-600"
-                required={file && fileSize > 250 * 1024 * 1024}
+                required={file && fileSize > 1024 * 1024 * 1024}
               />
               <p className="text-neutral-400 text-xs mt-2">
                 Paste the complete Cloudinary video URL (should include /video/ in the path)
@@ -365,6 +365,16 @@ export default function UploadPage() {
               <option value="thriller">😨 Thriller</option>
               <option value="halal">👨‍👩‍👧‍👦 Halal/Family</option>
               <option value="documentary">📺 Documentary</option>
+              <option value="vj">🎤 VJ (Luganda)</option>
+              <option value="horror">👻 Horror</option>
+              <option value="romance">💕 Romance</option>
+              <option value="animation">🎨 Animation</option>
+              <option value="scifi">🚀 Sci-Fi</option>
+              <option value="anime">⛩️ Anime</option>
+              <option value="sports">⚽ Sports</option>
+              <option value="kids">🎪 Kids</option>
+              <option value="adventure">🏔️ Adventure</option>
+              <option value="fantasy">✨ Fantasy</option>
             </select>
           </div>
 
